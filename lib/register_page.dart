@@ -13,10 +13,11 @@ class RegisterPage extends StatelessWidget {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
+      body: jsonEncode(<String, dynamic>{//string string
         'username': username,
         'email': email,
         'password': password,
+        //'is_admin': true, //skasowac
       }),
     );
 

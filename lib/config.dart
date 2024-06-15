@@ -1,3 +1,3 @@
 class AppConfig {
-  static final String baseUrl = 'http://192.168.10.168:8000';
+  static final String baseUrl = 'https://efekto.pythonanywhere.com/';
 }

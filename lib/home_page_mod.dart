@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:projekt/profile_page.dart'; // Import the profile page
+import 'package:projekt/login_page.dart'; // Import the login page
 import 'package:projekt/visited_page.dart';
-
+import 'add_room_page.dart';
 import 'add_exhibit_page.dart';
 import 'delete_page.dart';
 import 'scanner_page.dart'; // Import the visited page
-
+import 'update_exhibit_page.dart';
 class HomePageMod extends StatelessWidget {
   final String username; // Add username parameter
 
@@ -15,8 +16,29 @@ class HomePageMod extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Noc w muzeum'),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Noc w muzeum',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                // Implement logout functionality here
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                      (route) => false,
+                );
+              },
+              icon: Icon(Icons.logout),
+            ),
+          ],
+        ),
         backgroundColor: const Color.fromARGB(255, 221, 206, 69),
+        automaticallyImplyLeading: false, // This line hides the leading arrow
       ),
       body: Center(
         child: Column(
@@ -65,7 +87,7 @@ class HomePageMod extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AddExhibit()), // Navigate to AddExhibit
                   );
                 },
-                label: const Text('DODAJ'),
+                label: const Text('DODAJ EKSPONAT'),
                 icon: const Icon(Icons.add),
                 style: ElevatedButton.styleFrom(foregroundColor: Colors.black),
               ),
@@ -75,13 +97,33 @@ class HomePageMod extends StatelessWidget {
               width: double.infinity,
               height: 55.0,
               child: ElevatedButton.icon(
-                label: const Text('USUN'),
                 onPressed: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const DeletePage(),),);// Navigate to AddExhibit;
+                    context,
+                    MaterialPageRoute(builder: (context) => const AddRoom()), // Navigate to AddExhibit
+                  );
                 },
-                icon: const Icon(Icons.remove),
+                label: const Text('DODAJ POKÓJ'),
+                icon: const Icon(Icons.add),
+                style: ElevatedButton.styleFrom(foregroundColor: Colors.black),
+              ),
+            ),
+
+            const SizedBox(height: 20), // Dodano odstęp między przyciskami
+            SizedBox(
+              width: double.infinity,
+              height: 55.0,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UpdateExhibit(), // Navigate to UpdateExhibit
+                    ),
+                  );
+                },
+                label: const Text('EDYTUJ EKSPONAT'),
+                icon: const Icon(Icons.edit),
                 style: ElevatedButton.styleFrom(foregroundColor: Colors.black),
               ),
             ),

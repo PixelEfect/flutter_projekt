@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'config.dart';
 
 class QRCodeScanner extends StatefulWidget {
   const QRCodeScanner({super.key, required this.username});
@@ -69,7 +70,7 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
                       String username = widget.username;
                       // Send exhibit name and username to backend
                       final response = await httpClient.post(
-                        Uri.parse('http://192.168.10.168:8000/api/users/$username/exhibits/$exhibitName/'),
+                        Uri.parse('${AppConfig.baseUrl}/api/users/$username/exhibits/$exhibitName/'),
                       );
 
                       if (response.statusCode == 200) {
