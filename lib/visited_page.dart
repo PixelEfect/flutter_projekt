@@ -30,20 +30,18 @@ class _VisitedPageState extends State<VisitedPage> {
       await fetchUserData();
       await fetchTotalAvailablePoints();
     } catch (e) {
-      print('Error fetching data: $e');
-      // Handle error gracefully, e.g., show error message to user
+      print('Błąd podczas pobierania danych: $e');
+      // Obsługa błędów
     }
   }
 
   Future<void> fetchVisitedExhibits() async {
-    final response = await http.get(Uri.parse(
-        '${AppConfig.baseUrl}/api/users/${widget.username}/visited-exhibits/'));
+    final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/users/${widget.username}/visited-exhibits/'));
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
+      final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes)); // Dekodowanie z UTF-8
       setState(() {
         visitedExhibits = data.map((item) {
-          int exhibitPoints = item['points'] ??
-              0; // Zliczanie punktów każdego eksponatu
+          int exhibitPoints = item['points'] ?? 0; // Zliczanie punktów każdego eksponatu
           return {
             'id': item['id'],
             'name': item['name'],
@@ -53,16 +51,15 @@ class _VisitedPageState extends State<VisitedPage> {
         }).toList();
       });
     } else {
-      throw Exception('Failed to load visited exhibits');
+      throw Exception('Nie udało się załadować odwiedzonych eksponatów');
     }
   }
 
   Future<void> fetchUserData() async {
-    final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/users/${widget.username}/id/'));
+    final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/users/${widget.username}/id/'));
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
-      print('User Data Response: $data');
+      print('Odpowiedź z danymi użytkownika: $data');
 
       String userIdFromUserData = data['id'].toString();
       print('userIdFromUserData: $userIdFromUserData');
@@ -71,29 +68,22 @@ class _VisitedPageState extends State<VisitedPage> {
         userId = int.parse(userIdFromUserData);
         print('UserID: $userId');
       } else {
-        print('Error: User ID is null or invalid');
+        print('Błąd: ID użytkownika jest null lub nieprawidłowe');
       }
     } else {
-      throw Exception('Failed to load user data');
+      throw Exception('Nie udało się załadować danych użytkownika');
     }
   }
 
-
-
-
-
-
-
   Future<void> fetchTotalAvailablePoints() async {
-    final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/exhibits/total-points/'));
+    final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/exhibits/total-points/'));
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
       setState(() {
         totalAvailablePoints = data['total_points'];
       });
     } else {
-      throw Exception('Failed to load total available points');
+      throw Exception('Nie udało się załadować całkowitej liczby punktów');
     }
   }
 
@@ -121,28 +111,22 @@ class _VisitedPageState extends State<VisitedPage> {
         itemCount: visitedExhibits.length,
         itemBuilder: (BuildContext context, int index) {
           final exhibit = visitedExhibits[index];
-          int exhibitPoints = exhibit['points'] ??
-              0; // Zliczanie punktów każdego eksponatu
+          int exhibitPoints = exhibit['points'] ?? 0; // Zliczanie punktów każdego eksponatu
           return ListTile(
             title: Text(
-              '${exhibit['name']} - ${exhibit['description']}',
+              '${exhibit['name']} - Liczba punktów: $exhibitPoints',
               style: TextStyle(fontSize: 16.0),
-            ),
-            subtitle: Text(
-              'Liczba punktów: $exhibitPoints',
-              style: TextStyle(fontSize: 14.0),
             ),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ExhibitDetailPage(
-                        exhibitName: exhibit['name'],
-                        exhibitDescription: exhibit['description'],
-                        exhibitId: exhibit['id'],
-                        userId: userId,
-                      ),
+                  builder: (context) => ExhibitDetailPage(
+                    exhibitName: exhibit['name'],
+                    exhibitDescription: exhibit['description'],
+                    exhibitId: exhibit['id'],
+                    userId: userId,
+                  ),
                 ),
               );
             },

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -27,9 +28,20 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
-        result = scanData.code!;
+        // Bezpieczne dekodowanie wyników skanera
+        result = _safeDecode(scanData.code!);
       });
     });
+  }
+
+  String _safeDecode(String data) {
+    try {
+      // Spróbuj zdekodować przy pomocy Uri.decodeComponent, które może zgłosić wyjątek dla nieprawidłowych danych.
+      return Uri.decodeComponent(data);
+    } catch (e) {
+      // Jeśli dekodowanie nie powiedzie się, zwróć oryginalne dane lub przeprowadź dodatkowe czyszczenie.
+      return data; // Możesz dodać dodatkowe czyszczenie tutaj jeśli to konieczne
+    }
   }
 
   @override
@@ -52,7 +64,7 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
             flex: 1,
             child: Center(
               child: Text(
-                "Zeskanowany eksponat $result",
+                "Zeskanowany eksponat: $result",
                 style: const TextStyle(fontSize: 20.0),
               ),
             ),
@@ -63,20 +75,43 @@ class _QRCodeScannerState extends State<QRCodeScanner> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
-                    final Uri url = Uri.parse(result);
-
                     if (result.isNotEmpty) {
-                      String exhibitName = Uri.decodeFull(url.pathSegments.last);
-                      String username = widget.username;
-                      // Send exhibit name and username to backend
-                      final response = await httpClient.post(
-                        Uri.parse('${AppConfig.baseUrl}/api/users/$username/exhibits/$exhibitName/'),
-                      );
+                      final Uri? url = Uri.tryParse(result);
 
-                      if (response.statusCode == 200) {
-                        // Handle success
+                      if (url != null && url.isAbsolute) {
+                        String exhibitName = Uri.decodeFull(url.pathSegments.last);
+                        String username = widget.username;
+                        // Wysyłanie nazwy eksponatu i użytkownika do backend'u
+                        final response = await httpClient.post(
+                          Uri.parse('${AppConfig.baseUrl}/api/users/$username/exhibits/$exhibitName/'),
+                          headers: {
+                            'Content-Type': 'application/json; charset=UTF-8',
+                          },
+                        );
+
+                        if (response.statusCode == 200) {
+                          // Obsługa sukcesu
+                        } else {
+                          // Obsługa błędu
+                        }
                       } else {
-                        // Handle failure
+                        // Obsługa sytuacji gdy wynik skanowania nie jest prawidłowym URL
+                        String exhibitName = result;
+                        String username = widget.username;
+
+                        // Wysyłanie nazwy eksponatu i użytkownika do backend'u
+                        final response = await httpClient.post(
+                          Uri.parse('${AppConfig.baseUrl}/api/users/$username/exhibits/$exhibitName/'),
+                          headers: {
+                            'Content-Type': 'application/json; charset=UTF-8',
+                          },
+                        );
+
+                        if (response.statusCode == 200) {
+                          // Obsługa sukcesu
+                        } else {
+                          // Obsługa błędu
+                        }
                       }
                     }
                   },

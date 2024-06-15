@@ -30,7 +30,6 @@ class _ExhibitDetailPageState extends State<ExhibitDetailPage> {
     super.initState();
     _fetchComments();
     print('User ID in ExhibitDetailPage: ${widget.userId}');
-
   }
 
   Future<void> _fetchComments() async {
@@ -40,7 +39,8 @@ class _ExhibitDetailPageState extends State<ExhibitDetailPage> {
 
     if (response.statusCode == 200) {
       setState(() {
-        _comments = List<Map<String, dynamic>>.from(json.decode(response.body));
+        // Dekodowanie z UTF-8
+        _comments = List<Map<String, dynamic>>.from(json.decode(utf8.decode(response.bodyBytes)));
       });
     } else {
       print('Failed to load comments');
@@ -54,11 +54,14 @@ class _ExhibitDetailPageState extends State<ExhibitDetailPage> {
       print('Adding comment - user_id: ${widget.userId}, exhibit_id: ${widget.exhibitId}, comment: $commentText');
       final response = await http.post(
         Uri.parse('${AppConfig.baseUrl}/api/add_comment/'),
-        body: {
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
           'user_id': widget.userId.toString(),
           'exhibit_id': widget.exhibitId.toString(),
           'comment': commentText,
-        },
+        }),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         _commentController.clear();
@@ -71,7 +74,6 @@ class _ExhibitDetailPageState extends State<ExhibitDetailPage> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +102,6 @@ class _ExhibitDetailPageState extends State<ExhibitDetailPage> {
               ),
             ),
             const SizedBox(height: 20.0),
-
             TextField(
               controller: _commentController,
               decoration: InputDecoration(
@@ -113,7 +114,6 @@ class _ExhibitDetailPageState extends State<ExhibitDetailPage> {
               onPressed: _addComment,
               child: const Text('Dodaj komentarz'),
             ),
-
           ],
         ),
       ),
