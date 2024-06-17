@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'config.dart';
+import '../config.dart';
 
 class QRCodeScanner extends StatefulWidget {
   const QRCodeScanner({super.key, required this.username});

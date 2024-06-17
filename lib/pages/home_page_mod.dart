@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:projekt/profile_page.dart'; // Import the profile page
-import 'package:projekt/login_page.dart'; // Import the login page
-import 'package:projekt/visited_page.dart';
+import 'package:projekt/pages/profile_page.dart'; // Import the profile page
+import 'package:projekt/pages/login_page.dart'; // Import the login page
+import 'package:projekt/pages/visited_page.dart';
 import 'add_room_page.dart';
 import 'add_exhibit_page.dart';
-import 'delete_page.dart';
 import 'scanner_page.dart'; // Import the visited page
 import 'update_exhibit_page.dart';
 class HomePageMod extends StatelessWidget {

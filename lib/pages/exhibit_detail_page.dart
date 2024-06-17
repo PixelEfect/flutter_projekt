@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'config.dart'; // Ten plik powinien zawierać definicję AppConfig
+import '../config.dart'; // Ten plik powinien zawierać definicję AppConfig
 
 class ExhibitDetailPage extends StatefulWidget {
   final String exhibitName;

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:projekt/home_page.dart';
+import 'package:projekt/pages/home_page.dart';
 import 'home_page_mod.dart';
 import 'register_page.dart';
-import 'config.dart';
+import '../config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

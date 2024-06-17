@@ -1,42 +1,36 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'config.dart';
+import '../config.dart';
 
-class UpdateExhibit extends StatefulWidget {
-  const UpdateExhibit({Key? key}) : super(key: key);
+class AddExhibit extends StatefulWidget {
+  const AddExhibit({super.key});
 
   @override
-  State<UpdateExhibit> createState() => _UpdateExhibitState();
+  State<AddExhibit> createState() => _AddExhibitState();
 }
 
-class _UpdateExhibitState extends State<UpdateExhibit> {
+class _AddExhibitState extends State<AddExhibit> {
   final GlobalKey globalKey = GlobalKey(debugLabel: "QR2");
-  String selectedExhibitId = "";
   String qrData = "";
   String opis = "";
   String roomNumber = "";
-  String points = "";
-  List<Room> rooms = [];
-  List<Exhibit> exhibits = [];
+  String points = ""; // Nowa zmienna do przechowywania liczby punktów
+  List<Room> rooms = []; // Zaktualizowana lista pokojów
 
   @override
   void initState() {
     super.initState();
     _fetchRooms();
-    _fetchExhibits();
   }
 
   Future<void> _fetchRooms() async {
     try {
-      final response = await http.get(
-          Uri.parse('${AppConfig.baseUrl}/api/rooms/'));
+      final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/rooms/'));
       if (response.statusCode == 200) {
+        // Ensure that the response body is decoded in UTF-8
         List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         setState(() {
           rooms = data.map<Room>((json) => Room.fromJson(json)).toList();
@@ -50,32 +44,11 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
     }
   }
 
-  Future<void> _fetchExhibits() async {
-    try {
-      final response = await http.get(
-          Uri.parse('${AppConfig.baseUrl}/api/exhibits/'));
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
-        List<Exhibit> fetchedExhibits =
-        data.map<Exhibit>((json) => Exhibit.fromJson(json)).toList();
-
-        setState(() {
-          exhibits = fetchedExhibits;
-        });
-        print('Exhibits loaded successfully: $exhibits');
-      } else {
-        print('Failed to load exhibits. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error loading exhibits: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Aktualizuj eksponat"),
+        title: const Text("Dodaj eksponat"),
         backgroundColor: const Color.fromARGB(255, 221, 206, 69),
       ),
       body: SingleChildScrollView(
@@ -83,30 +56,18 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
-              SizedBox(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
-                child: TextField(
-                  decoration: const InputDecoration(
-                    hintText: "ID",
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedExhibitId = value;
-                    });
-                  },
+              const SizedBox(height: 30),
+              RepaintBoundary(
+                key: globalKey,
+                child: QrImageView(
+                  data: qrData,
+                  version: QrVersions.auto,
+                  size: 200.0,
                 ),
               ),
               const SizedBox(height: 40),
               SizedBox(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
+                width: MediaQuery.of(context).size.width * 0.8,
                 child: TextField(
                   decoration: const InputDecoration(
                     hintText: "Nazwa",
@@ -121,10 +82,7 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
               ),
               const SizedBox(height: 15),
               SizedBox(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
+                width: MediaQuery.of(context).size.width * 0.8,
                 height: 100,
                 child: TextField(
                   decoration: const InputDecoration(
@@ -141,19 +99,16 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
                 ),
               ),
               const SizedBox(height: 15),
+              // TextField for entering points
               SizedBox(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
+                width: MediaQuery.of(context).size.width * 0.8,
                 child: TextField(
                   decoration: const InputDecoration(
                     hintText: "Punkty eksponatu",
                     border: OutlineInputBorder(),
                     labelText: "Punkty (domyślnie 1)",
                   ),
-                  keyboardType: TextInputType.number,
-                  // Dodatkowo ustal typ klawiatury
+                  keyboardType: TextInputType.number, // Dodatkowo ustal typ klawiatury
                   onChanged: (value) {
                     setState(() {
                       points = value;
@@ -162,11 +117,9 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
                 ),
               ),
               const SizedBox(height: 15),
+              // TextField for entering room number
               SizedBox(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
+                width: MediaQuery.of(context).size.width * 0.8,
                 child: TextField(
                   decoration: const InputDecoration(
                     hintText: "Numer pokoju",
@@ -182,31 +135,25 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
               ),
               const SizedBox(height: 15),
               ElevatedButton.icon(
-                onPressed: _updateExhibit,
-                label: const Text('Zmień'),
+                onPressed: _addExhibit,
+                label: const Text('Dodaj'),
                 icon: const Icon(Icons.add),
               ),
               const SizedBox(height: 15),
+              // ListView to display available rooms
               const Text(
-                "Dostępne eksponaty:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Text(
-                "(ID, nazwa (punkty) - pokój)",
+                "Dostępne pokoje:",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Container(
                 height: 200,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: exhibits.length,
+                  itemCount: rooms.length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       title: Text(
-                        "${exhibits[index].id}. ${exhibits[index]
-                            .name} (${exhibits[index]
-                            .points}) - ${exhibits[index].roomNumber}",
-                      ),
+                          "${rooms[index].roomNumber} - ${rooms[index].name}"),
                     );
                   },
                 ),
@@ -218,30 +165,29 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
     );
   }
 
-  Future<void> _updateExhibit() async {
+  Future<void> _addExhibit() async {
+    // Before sending, ensure that the room number exists
     if (rooms.any((room) => room.roomNumber == roomNumber)) {
       try {
         final exhibitData = {
-          'id': selectedExhibitId,
           'name': qrData,
           'description': opis,
-          'points': int.tryParse(points) ?? 1,
-          'room': roomNumber,
+          'points': int.tryParse(points) ?? 1, // Uwzględnione punkty, domyślnie 1 jeśli jest brak lub błędne dane
+          'room': roomNumber, // Uwzględnij wpisany numer pokoju
         };
 
         print('Sending request with data: $exhibitData');
 
-        final response = await http.put(
-          Uri.parse('${AppConfig.baseUrl}/api/exhibits/$selectedExhibitId/'),
+        final response = await http.post(
+          Uri.parse('${AppConfig.baseUrl}/api/exhibits/create/'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode(exhibitData),
         );
 
-        if (response.statusCode == 200) {
-          print('Exhibit updated successfully');
+        if (response.statusCode == 201) {
+          print('Exhibit added successfully');
         } else {
-          print(
-              'Failed to update exhibit. Status code: ${response.statusCode}');
+          print('Failed to add exhibit. Status code: ${response.statusCode}');
           print('Response body: ${response.body}');
         }
       } catch (e) {
@@ -249,16 +195,16 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
       }
     } else {
       print('Invalid room number: $roomNumber');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Pokój z numerem $roomNumber nie istnieje."),
-        ),
-      );
+      // Optionally, show an error message to the user
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Pokój z numerem $roomNumber nie istnieje."),
+      ));
     }
   }
 }
 
-  class Room {
+// Model Room
+class Room {
   final String roomNumber;
   final String name;
 
@@ -268,24 +214,6 @@ class _UpdateExhibitState extends State<UpdateExhibit> {
     return Room(
       roomNumber: json['room_number'],
       name: json['name'],
-    );
-  }
-}
-
-class Exhibit {
-  final int id;
-  final String name;
-  final int points;
-  final String roomNumber;
-
-  Exhibit({required this.id, required this.name, required this.points, required this.roomNumber});
-
-  factory Exhibit.fromJson(Map<String, dynamic> json) {
-    return Exhibit(
-      id: json['id'],
-      name: json['name'],
-      points: json['points'],
-      roomNumber: json['room'],
     );
   }
 }

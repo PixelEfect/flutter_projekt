@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:projekt/profile_page.dart'; // Import the profile page
-import 'package:projekt/visited_page.dart';
-import 'package:projekt/login_page.dart'; // Import the login page
+import 'package:projekt/pages/profile_page.dart'; // Import the profile page
+import 'package:projekt/pages/visited_page.dart';
+import 'package:projekt/pages/login_page.dart'; // Import the login page
 import 'scanner_page.dart'; // Import the scanner page
 
 class HomePage extends StatelessWidget {

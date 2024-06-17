@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'config.dart';
+import '../config.dart';
 import 'exhibit_detail_page.dart';
 
 class VisitedPage extends StatefulWidget {
